@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Medicamentos - Farmacia</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" />
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.2/font/bootstrap-icons.css" rel="stylesheet" />
+  <link rel="stylesheet" href="css/styles.css" />
+</head>
+<body>
+  <div id="navbar-farmacia"></div>
+
+  <main class="contenedor-principal">
+    <div id="contenedor-alerta"></div>
+
+    <div class="cabecera-pagina">
+      <h1><i class="bi bi-capsule"></i> Medicamentos</h1>
+      <button class="btn-nuevo" id="btn-nuevo-medicamento" onclick="abrirModalCrearMedicamento()">
+        <i class="bi bi-plus-lg"></i> Nuevo Medicamento
+      </button>
+    </div>
+
+    <div class="tarjeta-tabla">
+      <table class="tabla-farmacia">
+        <thead>
+          <tr>
+            <th style="width: 60px;">ID</th>
+            <th>Nombre</th>
+            <th>Descripción</th>
+            <th>Precio</th>
+            <th>Stock</th>
+            <th>Tipo</th>
+            <th style="width: 110px;">Acciones</th>
+          </tr>
+        </thead>
+        <tbody id="tbody-medicamentos">
+          <tr><td colspan="7" class="sin-datos">Cargando...</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </main>
+
+  <!-- Modal para crear/editar medicamento -->
+  <div class="modal fade modal-farmacia" id="modal-medicamento" tabindex="-1" aria-labelledby="titulo-modal-medicamento" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="titulo-modal-medicamento">Nuevo Medicamento</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+        </div>
+        <form id="form-medicamento" novalidate>
+          <div class="modal-body">
+            <input type="hidden" id="med-id" />
+
+            <div class="mb-3">
+              <label for="med-nombre" class="form-label">Nombre</label>
+              <input
+                type="text"
+                class="form-control"
+                id="med-nombre"
+                name="nombre"
+                maxlength="100"
+                required
+              />
+              <div id="error-med-nombre" class="texto-error-campo"></div>
+            </div>
+
+            <div class="mb-3">
+              <label for="med-descripcion" class="form-label">Descripción</label>
+              <textarea
+                class="form-control"
+                id="med-descripcion"
+                name="descripcion"
+                rows="2"
+                maxlength="250"
+              ></textarea>
+              <div id="error-med-descripcion" class="texto-error-campo"></div>
+            </div>
+
+            <div class="row">
+              <div class="col-md-6 mb-3">
+                <label for="med-precio" class="form-label">Precio (S/)</label>
+                <input
+                  type="number"
+                  step="0.01"
+                  min="0"
+                  class="form-control"
+                  id="med-precio"
+                  name="precio"
+                  required
+                />
+                <div id="error-med-precio" class="texto-error-campo"></div>
+              </div>
+              <div class="col-md-6 mb-3">
+                <label for="med-stock" class="form-label">Stock</label>
+                <input
+                  type="number"
+                  step="1"
+                  min="0"
+                  class="form-control"
+                  id="med-stock"
+                  name="stock"
+                  required
+                />
+                <div id="error-med-stock" class="texto-error-campo"></div>
+              </div>
+            </div>
+
+            <div class="mb-3">
+              <label for="med-tipo" class="form-label">Tipo de medicamento</label>
+              <select class="form-select" id="med-tipo" name="tipoMedicId" required>
+                <option value="">Seleccione un tipo...</option>
+              </select>
+              <div id="error-med-tipo" class="texto-error-campo"></div>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+            <button type="submit" class="btn btn-primary">Guardar</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="js/api.js"></script>
+  <script src="js/validators.js"></script>
+  <script src="js/nav.js"></script>
+  <script src="js/medicamentos.js"></script>
+</body>
+</html>
