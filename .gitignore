@@ -1,0 +1,106 @@
+# =============================================================
+# .gitignore — web_avanzado_pcalificada2
+# Ignora dependencias, secretos y archivos generados para que
+# el repositorio solo contenga código fuente.
+# =============================================================
+
+# -----------------------------
+# Node.js — dependencias
+# -----------------------------
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+package-lock.json.bak
+
+# -----------------------------
+# Variables de entorno y secretos
+# -----------------------------
+.env
+.env.local
+.env.development
+.env.production
+.env.*.local
+backend-farmacia/.env
+frontend-farmacia/.env
+
+# Mantener SIEMPRE las plantillas de ejemplo
+!backend-farmacia/.env.example
+!frontend-farmacia/.env.example
+
+# -----------------------------
+# Logs
+# -----------------------------
+logs/
+*.log
+
+# -----------------------------
+# Archivos subidos por el usuario / runtime
+# -----------------------------
+tmp/
+temp/
+uploads/
+.pid
+*.pid
+*.seed
+*.pid.lock
+
+# -----------------------------
+# Cachés y builds
+# -----------------------------
+.cache/
+.parcel-cache/
+dist/
+build/
+out/
+coverage/
+.nyc_output/
+
+# -----------------------------
+# Backend — Sequelize
+# -----------------------------
+backend-farmacia/.sequelizerc.bak
+backend-farmacia/migrations/.keep.tmp
+
+# -----------------------------
+# IDEs y editores
+# -----------------------------
+.vscode/
+!.vscode/extensions.json
+!.vscode/settings.json
+.idea/
+*.swp
+*.swo
+*.sublime-project
+*.sublime-workspace
+
+# -----------------------------
+# Historial de comandos / shells
+# -----------------------------
+.history
+.bash_history
+.zsh_history
+.psconsole.history
+
+# -----------------------------
+# Sistema operativo
+# -----------------------------
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+ehthumbs_view.db
+Thumbs.db
+desktop.ini
+$RECYCLE.BIN/
+
+# -----------------------------
+# Otros
+# -----------------------------
+*.tgz
+*.tar.gz
+.eslintcache
+.stylelintcache
