@@ -1,37 +1,46 @@
 // ===========================================================
 // tipos.js — CRUD de la tabla relacionada "tipos_medicamento"
-// Solo el rol admin puede crear/editar/eliminar.
-// Moderador y cliente no ven esta página.
+// Permisos:
+//   - admin     : ver, crear, editar, eliminar
+//   - moderador : ver (solo lectura)
+//   - cliente   : sin acceso (redirigido desde la navbar)
 // ===========================================================
 
 document.addEventListener("DOMContentLoaded", () => {
   const usuario = Nav.requerirAutenticacion();
   if (!usuario) return;
 
-  if (usuario.rol !== "admin") {
+  if (usuario.rol !== "admin" && usuario.rol !== "moderador") {
     window.location.href = "home.html";
     return;
   }
 
   Nav.renderizar("tipos");
-  inicializarPaginaTipos();
+  inicializarPaginaTipos(usuario);
 });
 
 let tiposEnMemoria = [];
 
-function inicializarPaginaTipos() {
-  cargarYRenderizarTipos();
+function inicializarPaginaTipos(usuario) {
+  const puedeEscribir = Nav.puedeEscribir("tipos-medicamento");
+
+  const btnNuevo = document.getElementById("btn-nuevo-tipo");
+  if (btnNuevo) {
+    btnNuevo.style.display = puedeEscribir ? "inline-flex" : "none";
+  }
+
+  cargarYRenderizarTipos(puedeEscribir);
 
   const form = document.getElementById("form-tipo");
   if (form) {
     form.addEventListener("submit", async (evento) => {
       evento.preventDefault();
-      await manejarEnvioFormulario();
+      await manejarEnvioFormulario(puedeEscribir);
     });
   }
 }
 
-async function cargarYRenderizarTipos() {
+async function cargarYRenderizarTipos(puedeEscribir) {
   const tbody = document.getElementById("tbody-tipos");
   if (!tbody) return;
   tbody.innerHTML = `<tr><td colspan="4" class="sin-datos">
@@ -41,14 +50,14 @@ async function cargarYRenderizarTipos() {
   try {
     const tipos = await API.listarTipos();
     tiposEnMemoria = tipos;
-    renderizarTabla(tipos);
+    renderizarTabla(tipos, puedeEscribir);
   } catch (error) {
     Toast.error(error.message);
     tbody.innerHTML = `<tr><td colspan="4" class="sin-datos text-danger">${escapeHtml(error.message)}</td></tr>`;
   }
 }
 
-function renderizarTabla(tipos) {
+function renderizarTabla(tipos, puedeEscribir) {
   const tbody = document.getElementById("tbody-tipos");
   if (!tipos || tipos.length === 0) {
     tbody.innerHTML = `<tr><td colspan="4" class="sin-datos">No hay tipos de medicamento registrados.</td></tr>`;
@@ -64,10 +73,12 @@ function renderizarTabla(tipos) {
       <td>
         <div class="acciones-celda">
           <button class="btn-accion editar" title="Editar"
+                  ${puedeEscribir ? "" : "disabled"}
                   onclick="editarTipo(${t.id})">
             <i class="bi bi-pencil"></i>
           </button>
           <button class="btn-accion eliminar" title="Eliminar"
+                  ${puedeEscribir ? "" : "disabled"}
                   onclick="confirmarEliminarTipo(${t.id}, '${escapeHtml(t.nombre).replace(/'/g, "&#39;")}')">
             <i class="bi bi-trash"></i>
           </button>
@@ -79,7 +90,12 @@ function renderizarTabla(tipos) {
     .join("");
 }
 
-async function manejarEnvioFormulario() {
+async function manejarEnvioFormulario(puedeEscribir) {
+  if (!puedeEscribir) {
+    Toast.aviso("No tienes permisos para modificar tipos de medicamento.");
+    return;
+  }
+
   const idInput = document.getElementById("tipo-id");
   const nombreInput = document.getElementById("tipo-nombre");
   const descripcionInput = document.getElementById("tipo-descripcion");
@@ -120,7 +136,7 @@ async function manejarEnvioFormulario() {
     }
     cerrarModal();
     limpiarFormulario();
-    await cargarYRenderizarTipos();
+    await cargarYRenderizarTipos(puedeEscribir);
   } catch (error) {
     Toast.error(error.message);
   }
@@ -150,7 +166,8 @@ async function eliminarTipo(id) {
   try {
     await API.eliminarTipo(id);
     Toast.exito("Tipo de medicamento eliminado correctamente.");
-    await cargarYRenderizarTipos();
+    const usuario = Sesion.obtenerUsuario();
+    await cargarYRenderizarTipos(Nav.puedeEscribir("tipos-medicamento"));
   } catch (error) {
     Toast.error(error.message);
   }
