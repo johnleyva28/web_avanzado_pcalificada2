@@ -113,6 +113,18 @@ $RECYCLE.BIN/
 ~$*.pptx
 
 # -----------------------------
+# Tests E2E con Playwright
+# (frontend-farmacia/tests/e2e/) — credenciales y resultados
+# -----------------------------
+frontend-farmacia/tests/e2e/.env.test
+frontend-farmacia/tests/e2e/.env.test.local
+frontend-farmacia/tests/e2e/test-results/
+frontend-farmacia/tests/e2e/playwright-report/
+frontend-farmacia/tests/e2e/blob-report/
+frontend-farmacia/tests/e2e/playwright/.cache/
+frontend-farmacia/node_modules/
+
+# -----------------------------
 # Cryptographic key / credential files (CN-028)
 # -----------------------------
 *.pem
@@ -123,3 +135,5 @@ $RECYCLE.BIN/
 credentials.json
 credentials*.json
 service-account*.json
+
+frontend-farmacia/tests/e2e/.auth/

@@ -1,0 +1,16 @@
+{
+  "name": "frontend-farmacia",
+  "version": "1.0.0",
+  "description": "Frontend estatico del sistema Farmacia + tests E2E con Playwright",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "test:e2e": "playwright test",
+    "test:e2e:headed": "playwright test --headed",
+    "test:e2e:debug": "playwright test --debug",
+    "test:e2e:install": "playwright install chromium"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.48.0"
+  }
+}

@@ -42,17 +42,20 @@ app.use(
   })
 );
 
-// Login: 10 intentos / 15 min por IP. Register: 5 / 15 min.
+// Login: configurable via RATE_LIMIT_LOGIN (default 10/15min).
+// Register: configurable via RATE_LIMIT_REGISTER (default 5/15min).
+// Para tests E2E locales, se puede subir el limite via env (ej.
+// RATE_LIMIT_LOGIN=1000) sin redesplegar la logica de produccion.
 const authLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
-  limit: 10,
+  limit: parseInt(process.env.RATE_LIMIT_LOGIN || '10', 10),
   standardHeaders: 'draft-7',
   legacyHeaders: false,
   message: { message: 'Demasiados intentos. Intenta en 15 minutos.' },
 });
 const registerLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
-  limit: 5,
+  limit: parseInt(process.env.RATE_LIMIT_REGISTER || '5', 10),
   standardHeaders: 'draft-7',
   legacyHeaders: false,
   message: { message: 'Demasiados registros desde esta IP. Intenta en 15 minutos.' },
