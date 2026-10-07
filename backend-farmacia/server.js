@@ -66,19 +66,23 @@ const origenesPermitidos = (process.env.FRONTEND_URL || 'http://localhost:3000')
 
 console.log(`[CORS] Orígenes permitidos: ${origenesPermitidos.join(', ') || '(ninguno)'}`);
 
-// Middlewares globales
-app.use(cors({
-  origin: (origin, callback) => {
-    if (!origin) return callback(null, true);
-    if (origenesPermitidos.includes(origin)) return callback(null, true);
-    console.warn(`[CORS] Origin rechazado: "${origin}" (whitelist: ${origenesPermitidos.join(', ')})`);
-    // Importante: pasar null + false (rechaza) en vez de Error. Asi cors
-    // responde 403 con header "no permitido" en vez de 500 con HTML, que
-    // era lo que hacia que el navegador abortara con "Failed to fetch".
-    return callback(null, false);
-  },
-  credentials: false,
-}));
+// Validador de origin manual: corre ANTES de cors. Si el origin no
+// esta en la whitelist, retornamos 403 JSON directo, lo que el
+// navegador interpreta como "CORS no permitido" y aborta limpiamente.
+// Esto evita el bug donde cors con callback(null, false) dejaba
+// pasar la request al siguiente handler, que respondia 200 sin
+// headers CORS y el navegador decia 'Failed to fetch' sin contexto.
+app.use((req, res, next) => {
+  const origin = req.headers.origin;
+  if (!origin) return next();
+  if (origenesPermitidos.includes(origin)) return next();
+  console.warn(`[CORS] Origin rechazado: "${origin}"`);
+  return res.status(403).json({ message: 'Origen no permitido por CORS.' });
+});
+
+// cors con origin: true refleja el origin (ya validado arriba).
+// credentials: true para que el navegador envie la cookie httpOnly.
+app.use(cors({ origin: true, credentials: true }));
 app.use(express.json({ limit: '100kb' }));
 app.use(cookieParser());
 app.disable('x-powered-by');
