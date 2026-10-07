@@ -14,7 +14,11 @@ const isProd = process.env.NODE_ENV === 'production';
 const COOKIE_OPTIONS = {
   httpOnly: true,
   secure: isProd, // Secure solo en HTTPS; en dev localhost no aplica
-  sameSite: 'lax',
+  // SameSite=None para que la cookie viaje en requests cross-origin
+  // (frontend y backend en subdominios diferentes de onrender.com).
+  // SameSite=None REQUIERE Secure=true; por eso secure:isProd arriba.
+  // En dev local (HTTP), usamos 'lax' para que las pruebas funcionen.
+  sameSite: isProd ? 'none' : 'lax',
   maxAge: 8 * 60 * 60 * 1000, // 8h, igual que el JWT
   path: '/',
 };
