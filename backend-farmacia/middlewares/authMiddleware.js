@@ -1,5 +1,11 @@
 const jwt = require('jsonwebtoken');
 
+const JWT_VERIFY_OPTIONS = {
+  algorithms: ['HS256'],
+  issuer: 'farmacia-api',
+  audience: 'farmacia-web',
+};
+
 const verificarToken = (req, res, next) => {
   const authHeader = req.headers['authorization'];
 
@@ -10,7 +16,7 @@ const verificarToken = (req, res, next) => {
   const token = authHeader.startsWith('Bearer ') ? authHeader.split(' ')[1] : authHeader;
 
   try {
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    const decoded = jwt.verify(token, process.env.JWT_SECRET, JWT_VERIFY_OPTIONS);
     req.usuario = decoded;
     next();
   } catch (error) {

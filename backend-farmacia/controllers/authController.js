@@ -2,9 +2,16 @@ const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const { User } = require('../models');
 
+const JWT_OPTIONS = {
+  algorithm: 'HS256',
+  issuer: 'farmacia-api',
+  audience: 'farmacia-web',
+  expiresIn: process.env.JWT_EXPIRES_IN || '8h',
+};
+
 exports.register = async (req, res) => {
   try {
-    const { nombre, email, password, rol } = req.body;
+    const { nombre, email, password } = req.body;
 
     const existeUsuario = await User.findOne({ where: { email } });
     if (existeUsuario) {
@@ -14,17 +21,20 @@ exports.register = async (req, res) => {
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(password, salt);
 
+    // Política: el registro público solo crea cuentas 'cliente'. Cualquier
+    // promoción a admin/moderador debe hacerse desde un endpoint interno
+    // con verificación de rol. (CN-001)
     const nuevoUsuario = await User.create({
       nombre,
       email,
       password: hashedPassword,
-      rol: rol || 'cliente'
+      rol: 'cliente',
     });
 
     const token = jwt.sign(
       { id: nuevoUsuario.id, rol: nuevoUsuario.rol, email: nuevoUsuario.email },
       process.env.JWT_SECRET,
-      { expiresIn: process.env.JWT_EXPIRES_IN || '8h' }
+      JWT_OPTIONS
     );
 
     res.status(201).json({
@@ -38,7 +48,8 @@ exports.register = async (req, res) => {
       }
     });
   } catch (error) {
-    res.status(500).json({ message: 'Error al registrar usuario.', error: error.message });
+    console.error('[register]', error);
+    res.status(500).json({ message: 'Error interno del servidor.' });
   }
 };
 
@@ -47,19 +58,19 @@ exports.login = async (req, res) => {
     const { email, password } = req.body;
 
     const usuario = await User.findOne({ where: { email } });
-    if (!usuario) {
-      return res.status(404).json({ message: 'Usuario no encontrado.' });
-    }
+    // Comparar siempre contra un hash dummy para igualar el tiempo de
+    // respuesta y no permitir enumerar emails por status code distinto. (CN-010)
+    const hashDummy = '$2a$10$abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ012';
+    await bcrypt.compare(password || '', usuario ? usuario.password : hashDummy);
 
-    const passwordValido = await bcrypt.compare(password, usuario.password);
-    if (!passwordValido) {
+    if (!usuario || !passwordValido(usuario, password)) {
       return res.status(401).json({ message: 'Credenciales inválidas.' });
     }
 
     const token = jwt.sign(
       { id: usuario.id, rol: usuario.rol, email: usuario.email },
       process.env.JWT_SECRET,
-      { expiresIn: process.env.JWT_EXPIRES_IN || '8h' }
+      JWT_OPTIONS
     );
 
     res.json({
@@ -73,6 +84,13 @@ exports.login = async (req, res) => {
       }
     });
   } catch (error) {
-    res.status(500).json({ message: 'Error al iniciar sesión.', error: error.message });
+    console.error('[login]', error);
+    res.status(500).json({ message: 'Error interno del servidor.' });
   }
 };
+
+function passwordValido(usuario, password) {
+  // Se valida fuera del flujo de control principal para que el helper
+  // de timing se ejecute siempre, incluso cuando el usuario no existe.
+  return usuario ? bcrypt.compareSync(password, usuario.password) : false;
+}
