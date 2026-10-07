@@ -442,6 +442,37 @@ main, .contenedor-auth, .auth-split, .tarjeta-auth {
   color: var(--gris-500);
 }
 
+/* Botón X para limpiar (visible solo cuando hay texto) */
+.buscador-wrapper .btn-limpiar-buscar {
+  position: absolute;
+  right: 0.5rem;
+  top: 50%;
+  transform: translateY(-50%);
+  background: transparent;
+  border: none;
+  color: rgba(255, 255, 255, 0.6);
+  cursor: pointer;
+  padding: 0.15rem 0.3rem;
+  display: none;
+  font-size: 0.9rem;
+  line-height: 1;
+  transition: var(--transicion);
+}
+
+.buscador-wrapper .btn-limpiar-buscar:hover {
+  color: var(--blanco);
+  transform: translateY(-50%) scale(1.1);
+}
+
+.buscador-wrapper .form-control:not(:placeholder-shown) ~ .btn-limpiar-buscar {
+  display: block;
+}
+
+/* Padding extra a la derecha del input para que el texto no se solape con el X */
+.buscador-wrapper .form-control[type="search"] {
+  padding-right: 2.2rem;
+}
+
 .btn-buscar-nav {
   background: var(--azul-marino-claro);
   color: var(--blanco);

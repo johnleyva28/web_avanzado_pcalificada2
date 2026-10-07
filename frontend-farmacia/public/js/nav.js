@@ -54,7 +54,17 @@ const Nav = {
                   class="form-control"
                   placeholder="Buscar..."
                   aria-label="Buscar"
+                  autocomplete="off"
                 />
+                <button
+                  type="button"
+                  class="btn-limpiar-buscar"
+                  id="btn-limpiar-buscar-nav"
+                  aria-label="Limpiar búsqueda"
+                  title="Limpiar"
+                >
+                  <i class="bi bi-x-circle-fill"></i>
+                </button>
               </div>
               <button class="btn-buscar-nav" type="submit" id="btn-buscar-nav" aria-label="Buscar">
                 Buscar
@@ -154,33 +164,94 @@ const Nav = {
   /**
    * Activa el buscador del navbar: filtra las filas de la tabla
    * principal en la página actual por el texto ingresado.
-   * Si la página actual no tiene tabla, no hace nada.
+   * - Debounce 200ms para no filtrar en cada tecla
+   * - Botón X para limpiar (visible solo cuando hay texto)
+   * - Fila "Sin resultados" cuando 0 matches
+   * - Filtra sobre el textContent de cada fila, así cubre todas las
+   *   columnas de la tabla
    */
   asignarBuscador() {
     const btn = document.getElementById("btn-buscar-nav");
     const input = document.getElementById("input-buscar-nav");
+    const btnLimpiar = document.getElementById("btn-limpiar-buscar-nav");
     if (!btn || !input) return;
+
+    let debounceTimer = null;
+
+    const actualizarBotonLimpiar = () => {
+      if (!btnLimpiar) return;
+      btnLimpiar.style.display = input.value ? "block" : "none";
+    };
+
+    const mostrarSinResultados = (tabla, termino) => {
+      const sin = tabla.querySelector("tr.sin-resultados-busqueda");
+      if (sin) sin.remove();
+      const colspan = (tabla.querySelector("thead tr")?.children.length) || 1;
+      const tr = document.createElement("tr");
+      tr.className = "sin-resultados-busqueda";
+      tr.innerHTML =
+        `<td colspan="${colspan}" class="sin-datos">` +
+        `<i class="bi bi-search" aria-hidden="true"></i> ` +
+        `Sin resultados para "<strong>${this.escapar(termino)}</strong>"</td>`;
+      tabla.querySelector("tbody").appendChild(tr);
+    };
 
     const filtrar = () => {
       const termino = (input.value || "").toLowerCase().trim();
       const tablas = document.querySelectorAll(".tabla-farmacia");
       tablas.forEach((tabla) => {
         const filas = tabla.querySelectorAll("tbody tr");
+        let visibles = 0;
         filas.forEach((fila) => {
-          if (fila.classList.contains("sin-datos-fila")) return;
+          if (fila.classList.contains("sin-datos-fila")) {
+            fila.style.display = termino === "" ? "" : "none";
+            return;
+          }
+          if (fila.classList.contains("sin-resultados-busqueda")) {
+            fila.remove();
+            return;
+          }
           const texto = (fila.textContent || "").toLowerCase();
-          fila.style.display = termino === "" || texto.includes(termino) ? "" : "none";
+          const match = termino === "" || texto.includes(termino);
+          fila.style.display = match ? "" : "none";
+          if (match) visibles++;
         });
+        if (termino !== "" && visibles === 0) {
+          mostrarSinResultados(tabla, termino);
+        }
       });
     };
 
+    const filtrarDebounced = () => {
+      clearTimeout(debounceTimer);
+      debounceTimer = setTimeout(filtrar, 200);
+    };
+
+    const limpiar = () => {
+      input.value = "";
+      actualizarBotonLimpiar();
+      clearTimeout(debounceTimer);
+      filtrar();
+      input.focus();
+    };
+
     btn.addEventListener("click", filtrar);
+    input.addEventListener("input", () => {
+      actualizarBotonLimpiar();
+      filtrarDebounced();
+    });
     input.addEventListener("keyup", (e) => {
       if (e.key === "Enter") {
         e.preventDefault();
+        clearTimeout(debounceTimer);
         filtrar();
+      } else if (e.key === "Escape") {
+        limpiar();
       }
     });
+    if (btnLimpiar) btnLimpiar.addEventListener("click", limpiar);
+
+    actualizarBotonLimpiar();
   },
 
   /**
