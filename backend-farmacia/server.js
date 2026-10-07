@@ -16,12 +16,10 @@ const app = express();
 
 // Detrás de Render el servicio corre tras un proxy; necesario para
 // que req.ip refleje la IP del cliente (no del load balancer) y
-// para que el rate limiter funcione. (CN-024)
 app.set('trust proxy', 1);
 
 // Helmet con CSP custom: 'unsafe-inline' en style-src es necesario
 // porque Bootstrap inyecta estilos inline; los CDNs están pinned en
-// jsdelivr.net. (CN-013)
 app.use(
   helmet({
     contentSecurityPolicy: {
@@ -44,7 +42,6 @@ app.use(
   })
 );
 
-// Rate limiting: auth endpoints son los más sensibles. (CN-006)
 // Login: 10 intentos / 15 min por IP. Register: 5 / 15 min.
 const authLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
@@ -72,16 +69,15 @@ app.use(cors({
   origin: (origin, callback) => {
     // Requests sin Origin (curl, Postman, server-to-server) se permiten;
     // los browsers SIEMPRE envian Origin en requests CORS, asi que esta
-    // exencion no abre un vector de ataque via el navegador. (CN-016)
     if (!origin) return callback(null, true);
     if (origenesPermitidos.includes(origin)) return callback(null, true);
     return callback(new Error(`Origen no permitido por CORS: ${origin}`));
   },
-  credentials: false, // El API usa Bearer auth (CN-016)
+  credentials: false,
 }));
-app.use(express.json({ limit: '100kb' })); // (CN-023) cap defensivo
-app.use(cookieParser()); // necesario para leer la cookie httpOnly (CN-012)
-app.disable('x-powered-by'); // (CN-013) no leak del framework
+app.use(express.json({ limit: '100kb' }));
+app.use(cookieParser());
+app.disable('x-powered-by');
 
 // Rate limit aplicado por endpoint (más granular que a toda la ruta /api/auth)
 app.use('/api/auth/login', authLimiter);

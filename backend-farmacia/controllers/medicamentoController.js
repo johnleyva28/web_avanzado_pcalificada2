@@ -32,8 +32,6 @@ exports.crearMedicamento = async (req, res) => {
 exports.actualizarMedicamento = async (req, res) => {
   try {
     const { id } = req.params;
-    // Whitelist explicita: solo los campos del modelo son aceptados.
-    // (CN-005 mass assignment)
     const { nombre, descripcion, precio, stock, tipoMedicId } = req.body;
     const camposPermitidos = { nombre, descripcion, precio, stock, tipoMedicId };
     Object.keys(camposPermitidos).forEach(

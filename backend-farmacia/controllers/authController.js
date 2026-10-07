@@ -41,7 +41,6 @@ exports.register = async (req, res) => {
 
     // Política: el registro público solo crea cuentas 'cliente'. Cualquier
     // promoción a admin/moderador debe hacerse desde un endpoint interno
-    // con verificación de rol. (CN-001)
     const nuevoUsuario = await User.create({
       nombre,
       email,
@@ -78,7 +77,6 @@ exports.login = async (req, res) => {
 
     const usuario = await User.findOne({ where: { email } });
     // Comparar siempre contra un hash dummy para igualar el tiempo de
-    // respuesta y no permitir enumerar emails por status code distinto. (CN-010)
     const hashDummy = '$2a$10$abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ012';
     await bcrypt.compare(password || '', usuario ? usuario.password : hashDummy);
 

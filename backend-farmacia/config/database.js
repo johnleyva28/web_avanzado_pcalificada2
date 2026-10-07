@@ -5,7 +5,6 @@ require('dotenv').config();
 // Habilitar verificación de certificado TLS. Para entornos con CA
 // privada (Render Postgres), se debe pasar NODE_EXTRA_CA_CERTS o
 // configurar `dialectOptions.ssl.ca` con el bundle del proveedor.
-// (CN-011)
 const sslOptions = {
   require: true,
   rejectUnauthorized: process.env.DB_REJECT_UNAUTHORIZED !== 'false',

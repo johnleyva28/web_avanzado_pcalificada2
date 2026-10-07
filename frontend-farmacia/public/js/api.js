@@ -68,7 +68,6 @@ async function peticion(endpoint, opciones = {}) {
     headers,
     // Envia cookies httpOnly (farmacia_token) automaticamente. El backend
     // puede autenticar via cookie sin necesidad de exponer el token a JS.
-    // (CN-012)
     credentials: "include",
   };
 
