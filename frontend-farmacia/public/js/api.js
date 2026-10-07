@@ -88,10 +88,16 @@ async function peticion(endpoint, opciones = {}) {
   }
 
   if (!respuesta.ok) {
-    if (respuesta.status === 401 || respuesta.status === 403) {
+    // 401 = sesión inválida/expirada → limpiar y volver al login.
+    // 403 = sesión válida pero sin permisos → NO cerrar sesión, dejar que
+    //       el caller muestre el mensaje en un toast.
+    if (respuesta.status === 401) {
       Sesion.limpiar();
-      if (!window.location.pathname.endsWith("index.html") && window.location.pathname !== "/") {
-        window.location.href = "index.html";
+      const enLogin = window.location.pathname.endsWith("index.html")
+        || window.location.pathname.endsWith("/")
+        || window.location.pathname === "";
+      if (!enLogin) {
+        window.location.href = "index.html?expired=1";
       }
     }
     const mensaje = (data && data.message) || `Error ${respuesta.status} al comunicarse con el servidor.`;

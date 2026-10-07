@@ -21,8 +21,15 @@ exports.register = async (req, res) => {
       rol: rol || 'cliente'
     });
 
+    const token = jwt.sign(
+      { id: nuevoUsuario.id, rol: nuevoUsuario.rol, email: nuevoUsuario.email },
+      process.env.JWT_SECRET,
+      { expiresIn: process.env.JWT_EXPIRES_IN || '8h' }
+    );
+
     res.status(201).json({
       message: 'Usuario registrado con éxito',
+      token,
       usuario: {
         id: nuevoUsuario.id,
         nombre: nuevoUsuario.nombre,

@@ -2,11 +2,12 @@ const express = require('express');
 const router = express.Router();
 const tipoMedicController = require('../controllers/tipoMedicController');
 const { verificarToken } = require('../middlewares/authMiddleware');
+const { verificarRol } = require('../middlewares/roleMiddleware');
 
 // Lectura pública
 router.get('/', tipoMedicController.obtenerTipos);
 
-// Creación protegida con Token JWT
-router.post('/', verificarToken, tipoMedicController.crearTipo);
+// Creación solo para admin
+router.post('/', verificarToken, verificarRol('admin'), tipoMedicController.crearTipo);
 
 module.exports = router;

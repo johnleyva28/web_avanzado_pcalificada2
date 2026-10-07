@@ -14,6 +14,15 @@ document.addEventListener("DOMContentLoaded", () => {
   if (formRegistro) {
     inicializarRegistro(formRegistro);
   }
+
+  // --- Mensaje si llegamos por sesión expirada ---
+  const params = new URLSearchParams(window.location.search);
+  if (params.get("expired") === "1") {
+    Toast.aviso("Tu sesión expiró. Vuelve a iniciar sesión.");
+    params.delete("expired");
+    const nuevaUrl = window.location.pathname + (params.toString() ? "?" + params.toString() : "");
+    window.history.replaceState({}, "", nuevaUrl);
+  }
 });
 
 function inicializarLogin(formulario) {
