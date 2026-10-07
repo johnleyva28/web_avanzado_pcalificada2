@@ -1,10 +1,33 @@
 // ===========================================================
 // api.js — Capa fina sobre fetch para hablar con el backend
-// Lee el token JWT del sessionStorage y lo añade en cada
-// petición protegida. Maneja respuestas y errores uniformemente.
 // ===========================================================
 
-const API_BASE_URL = "http://localhost:4000/api";
+function resolverApiBaseUrl() {
+  const metaFull = document.querySelector('meta[name="api-base-url"]');
+  if (metaFull && metaFull.content) {
+    return metaFull.content.replace(/\/+$/, "");
+  }
+
+  if (typeof globalThis.__API_BASE_URL__ === "string" && globalThis.__API_BASE_URL__) {
+    return globalThis.__API_BASE_URL__.replace(/\/+$/, "");
+  }
+
+  const host = window.location.hostname;
+
+  if (host === "localhost" || host === "127.0.0.1") {
+    return "http://localhost:4000/api";
+  }
+
+  const metaHost = document.querySelector('meta[name="api-base-host"]');
+  if (metaHost && metaHost.content) {
+    return `https://${metaHost.content.replace(/^https?:\/\//, "")}/api`;
+  }
+
+  return "/api";
+}
+
+const API_BASE_URL = resolverApiBaseUrl();
+console.info("[Farmacia] API base URL:", API_BASE_URL);
 
 const Sesion = {
   guardar(token, usuario) {
