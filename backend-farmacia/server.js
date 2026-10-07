@@ -64,14 +64,18 @@ const origenesPermitidos = (process.env.FRONTEND_URL || 'http://localhost:3000')
   .map((o) => o.trim())
   .filter(Boolean);
 
+console.log(`[CORS] Orígenes permitidos: ${origenesPermitidos.join(', ') || '(ninguno)'}`);
+
 // Middlewares globales
 app.use(cors({
   origin: (origin, callback) => {
-    // Requests sin Origin (curl, Postman, server-to-server) se permiten;
-    // los browsers SIEMPRE envian Origin en requests CORS, asi que esta
     if (!origin) return callback(null, true);
     if (origenesPermitidos.includes(origin)) return callback(null, true);
-    return callback(new Error(`Origen no permitido por CORS: ${origin}`));
+    console.warn(`[CORS] Origin rechazado: "${origin}" (whitelist: ${origenesPermitidos.join(', ')})`);
+    // Importante: pasar null + false (rechaza) en vez de Error. Asi cors
+    // responde 403 con header "no permitido" en vez de 500 con HTML, que
+    // era lo que hacia que el navegador abortara con "Failed to fetch".
+    return callback(null, false);
   },
   credentials: false,
 }));
@@ -91,6 +95,15 @@ app.use('/api/medicamentos', medicamentoRoutes);
 // Ruta base
 app.get('/', (req, res) => {
   res.json({ message: 'API REST Farmacia activa' });
+});
+
+app.get('/health', (req, res) => {
+  res.json({
+    status: 'ok',
+    env: process.env.NODE_ENV || 'development',
+    cors_whitelist: origenesPermitidos,
+    time: new Date().toISOString(),
+  });
 });
 
 const PORT = process.env.PORT || 4000;
