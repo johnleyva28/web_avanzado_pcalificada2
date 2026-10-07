@@ -5,7 +5,8 @@ exports.obtenerTipos = async (req, res) => {
     const tipos = await TipoMedic.findAll();
     res.json(tipos);
   } catch (error) {
-    res.status(500).json({ message: 'Error al obtener tipos de medicamento.', error: error.message });
+    console.error('[obtenerTipos]', error);
+    res.status(500).json({ message: 'Error interno del servidor.' });
   }
 };
 
@@ -17,7 +18,8 @@ exports.obtenerTipo = async (req, res) => {
     }
     res.json(tipo);
   } catch (error) {
-    res.status(500).json({ message: 'Error al obtener el tipo de medicamento.', error: error.message });
+    console.error('[obtenerTipo]', error);
+    res.status(500).json({ message: 'Error interno del servidor.' });
   }
 };
 
@@ -27,7 +29,8 @@ exports.crearTipo = async (req, res) => {
     const nuevoTipo = await TipoMedic.create({ nombre, descripcion });
     res.status(201).json(nuevoTipo);
   } catch (error) {
-    res.status(500).json({ message: 'Error al crear tipo de medicamento.', error: error.message });
+    console.error('[crearTipo]', error);
+    res.status(500).json({ message: 'Error interno del servidor.' });
   }
 };
 
@@ -41,7 +44,8 @@ exports.actualizarTipo = async (req, res) => {
     await tipo.update({ nombre, descripcion });
     res.json(tipo);
   } catch (error) {
-    res.status(500).json({ message: 'Error al actualizar tipo de medicamento.', error: error.message });
+    console.error('[actualizarTipo]', error);
+    res.status(500).json({ message: 'Error interno del servidor.' });
   }
 };
 
@@ -59,6 +63,7 @@ exports.eliminarTipo = async (req, res) => {
         message: 'No se puede eliminar: hay medicamentos asociados a este tipo.',
       });
     }
-    res.status(500).json({ message: 'Error al eliminar tipo de medicamento.', error: error.message });
+    console.error('[eliminarTipo]', error);
+    res.status(500).json({ message: 'Error interno del servidor.' });
   }
 };
