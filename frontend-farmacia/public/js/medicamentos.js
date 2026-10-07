@@ -11,7 +11,25 @@ document.addEventListener("DOMContentLoaded", () => {
   if (!usuario) return;
   Nav.renderizar("medicamentos");
   inicializarPaginaMedicamentos(usuario);
+  wireEventosEstaticos();
 });
+
+function wireEventosEstaticos() {
+  const btnNuevo = document.getElementById("btn-nuevo-medicamento");
+  if (btnNuevo) btnNuevo.addEventListener("click", () => abrirModalCrearMedicamento());
+
+  const tbody = document.getElementById("tbody-medicamentos");
+  if (tbody) {
+    tbody.addEventListener("click", (e) => {
+      const btn = e.target.closest("button[data-action]");
+      if (!btn) return;
+      const id = Number(btn.dataset.id);
+      const nombre = btn.dataset.nombre || "";
+      if (btn.dataset.action === "editar") editarMedicamento(id);
+      if (btn.dataset.action === "eliminar") confirmarEliminarMedicamento(id, nombre);
+    });
+  }
+}
 
 let tiposDisponibles = [];
 let medicamentosEnMemoria = [];
@@ -83,14 +101,14 @@ function renderizarTabla(meds, puedeEscribir, puedeEliminar) {
         <td>${escapeHtml(tipo)}</td>
         <td>
           <div class="acciones-celda">
-            <button class="btn-accion editar" title="Editar"
-                    ${puedeEscribir ? "" : "disabled"}
-                    onclick="editarMedicamento(${m.id})">
+            <button class="btn-accion editar" title="Editar" type="button"
+                    data-action="editar" data-id="${m.id}"
+                    ${puedeEscribir ? "" : "disabled"}>
               <i class="bi bi-pencil"></i>
             </button>
-            <button class="btn-accion eliminar" title="Eliminar"
-                    ${puedeEliminar ? "" : "disabled"}
-                    onclick="confirmarEliminarMedicamento(${m.id}, '${escapeHtml(m.nombre).replace(/'/g, "&#39;")}')">
+            <button class="btn-accion eliminar" title="Eliminar" type="button"
+                    data-action="eliminar" data-id="${m.id}" data-nombre="${escapeHtml(m.nombre).replace(/"/g, "&quot;")}"
+                    ${puedeEliminar ? "" : "disabled"}>
               <i class="bi bi-trash"></i>
             </button>
           </div>

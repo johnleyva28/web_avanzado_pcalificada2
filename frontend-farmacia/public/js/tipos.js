@@ -17,7 +17,25 @@ document.addEventListener("DOMContentLoaded", () => {
 
   Nav.renderizar("tipos");
   inicializarPaginaTipos(usuario);
+  wireEventosEstaticos();
 });
+
+function wireEventosEstaticos() {
+  const btnNuevo = document.getElementById("btn-nuevo-tipo");
+  if (btnNuevo) btnNuevo.addEventListener("click", () => abrirModalCrear());
+
+  const tbody = document.getElementById("tbody-tipos");
+  if (tbody) {
+    tbody.addEventListener("click", (e) => {
+      const btn = e.target.closest("button[data-action]");
+      if (!btn) return;
+      const id = Number(btn.dataset.id);
+      const nombre = btn.dataset.nombre || "";
+      if (btn.dataset.action === "editar") editarTipo(id);
+      if (btn.dataset.action === "eliminar") confirmarEliminarTipo(id, nombre);
+    });
+  }
+}
 
 let tiposEnMemoria = [];
 
@@ -73,14 +91,14 @@ function renderizarTabla(tipos, puedeEscribir, puedeEliminar) {
       <td>${t.descripcion ? escapeHtml(t.descripcion) : '<span class="text-muted">—</span>'}</td>
       <td>
         <div class="acciones-celda">
-          <button class="btn-accion editar" title="Editar"
-                  ${puedeEscribir ? "" : "disabled"}
-                  onclick="editarTipo(${t.id})">
+          <button class="btn-accion editar" title="Editar" type="button"
+                  data-action="editar" data-id="${t.id}"
+                  ${puedeEscribir ? "" : "disabled"}>
             <i class="bi bi-pencil"></i>
           </button>
-          <button class="btn-accion eliminar" title="Eliminar"
-                  ${puedeEliminar ? "" : "disabled"}
-                  onclick="confirmarEliminarTipo(${t.id}, '${escapeHtml(t.nombre).replace(/'/g, "&#39;")}')">
+          <button class="btn-accion eliminar" title="Eliminar" type="button"
+                  data-action="eliminar" data-id="${t.id}" data-nombre="${escapeHtml(t.nombre).replace(/"/g, "&quot;")}"
+                  ${puedeEliminar ? "" : "disabled"}>
             <i class="bi bi-trash"></i>
           </button>
         </div>
