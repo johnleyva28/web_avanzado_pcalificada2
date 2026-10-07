@@ -79,7 +79,29 @@ async function peticion(endpoint, opciones = {}) {
   try {
     respuesta = await fetch(url, config);
   } catch (error) {
-    throw new Error("No se pudo conectar con el servidor. Verifica que el backend esté corriendo en el puerto 4000.");
+    // El fetch() lanza TypeError ("Failed to fetch", "NetworkError", etc.) en
+    // tres casos: servidor caido, DNS falla, o el preflight CORS fue
+    // rechazado. Distinguimos lo que podamos para que el usuario sepa donde
+    // mirar en vez de un mensaje generico que apuntaba al puerto 4000 local.
+    const errorMsg = String(error && error.message || error);
+    const isLikelyCors = /Failed to fetch|NetworkError|Load failed/i.test(errorMsg);
+    const isLocalApi = /localhost|127\.0\.0\.1/.test(url);
+    let mensaje;
+    if (isLikelyCors) {
+      mensaje = `El navegador bloqueo la peticion a ${url} (probable CORS o Mixed Content). ` +
+        `Si el frontend esta en HTTPS, el backend tambien debe estar en HTTPS. ` +
+        `Verifica que FRONTEND_URL en el backend incluya exactamente este origen.`;
+    } else if (isLocalApi) {
+      mensaje = `No se pudo conectar con el backend en ${url}. ` +
+        `Levantalo con: cd backend-farmacia && npm start`;
+    } else {
+      mensaje = `No se pudo conectar con ${url}. ` +
+        `Verifica que el backend este accesible y que no haya un proxy/firewall bloqueando.`;
+    }
+    const wrapped = new Error(mensaje);
+    wrapped.cause = error;
+    wrapped.url = url;
+    throw wrapped;
   }
 
   let data = null;
