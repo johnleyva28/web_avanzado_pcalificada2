@@ -2,6 +2,7 @@ const express = require('express');
 const cors = require('cors');
 const helmet = require('helmet');
 const rateLimit = require('express-rate-limit');
+const cookieParser = require('cookie-parser');
 require('dotenv').config();
 
 const { sequelize } = require('./models');
@@ -79,6 +80,7 @@ app.use(cors({
   credentials: false, // El API usa Bearer auth (CN-016)
 }));
 app.use(express.json({ limit: '100kb' })); // (CN-023) cap defensivo
+app.use(cookieParser()); // necesario para leer la cookie httpOnly (CN-012)
 app.disable('x-powered-by'); // (CN-013) no leak del framework
 
 // Rate limit aplicado por endpoint (más granular que a toda la ruta /api/auth)

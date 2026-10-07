@@ -137,7 +137,15 @@ const Nav = {
   asignarLogout() {
     const btn = document.getElementById("btn-cerrar-sesion");
     if (!btn) return;
-    btn.addEventListener("click", () => {
+    btn.addEventListener("click", async () => {
+      try {
+        await fetch(`${window.API_BASE_URL || ""}/api/auth/logout`, {
+          method: "POST",
+          credentials: "include",
+        });
+      } catch (_) {
+        // Si el backend no responde, igual limpiamos sesion local.
+      }
       Sesion.limpiar();
       window.location.href = "index.html";
     });

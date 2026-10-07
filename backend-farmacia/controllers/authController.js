@@ -9,6 +9,24 @@ const JWT_OPTIONS = {
   expiresIn: process.env.JWT_EXPIRES_IN || '8h',
 };
 
+const COOKIE_NAME = 'farmacia_token';
+const isProd = process.env.NODE_ENV === 'production';
+const COOKIE_OPTIONS = {
+  httpOnly: true,
+  secure: isProd, // Secure solo en HTTPS; en dev localhost no aplica
+  sameSite: 'lax',
+  maxAge: 8 * 60 * 60 * 1000, // 8h, igual que el JWT
+  path: '/',
+};
+
+function setAuthCookie(res, token) {
+  res.cookie(COOKIE_NAME, token, COOKIE_OPTIONS);
+}
+
+function clearAuthCookie(res) {
+  res.clearCookie(COOKIE_NAME, { path: '/' });
+}
+
 exports.register = async (req, res) => {
   try {
     const { nombre, email, password } = req.body;
@@ -37,6 +55,7 @@ exports.register = async (req, res) => {
       JWT_OPTIONS
     );
 
+    setAuthCookie(res, token);
     res.status(201).json({
       message: 'Usuario registrado con éxito',
       token,
@@ -73,6 +92,7 @@ exports.login = async (req, res) => {
       JWT_OPTIONS
     );
 
+    setAuthCookie(res, token);
     res.json({
       message: 'Inicio de sesión exitoso',
       token,
@@ -87,6 +107,11 @@ exports.login = async (req, res) => {
     console.error('[login]', error);
     res.status(500).json({ message: 'Error interno del servidor.' });
   }
+};
+
+exports.logout = (req, res) => {
+  clearAuthCookie(res);
+  res.json({ message: 'Sesión cerrada.' });
 };
 
 function passwordValido(usuario, password) {
