@@ -135,6 +135,17 @@ const API = {
       body: datos,
     });
   },
+  async actualizarTipo(id, datos) {
+    return peticion(`/tipos-medicamento/${id}`, {
+      method: "PUT",
+      body: datos,
+    });
+  },
+  async eliminarTipo(id) {
+    return peticion(`/tipos-medicamento/${id}`, {
+      method: "DELETE",
+    });
+  },
 
   // ---- MEDICAMENTOS ----
   async listarMedicamentos() {

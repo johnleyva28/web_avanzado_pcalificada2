@@ -6,8 +6,11 @@ const { verificarRol } = require('../middlewares/roleMiddleware');
 
 // Lectura pública
 router.get('/', tipoMedicController.obtenerTipos);
+router.get('/:id', tipoMedicController.obtenerTipo);
 
-// Creación solo para admin
+// Escritura solo para admin
 router.post('/', verificarToken, verificarRol('admin'), tipoMedicController.crearTipo);
+router.put('/:id', verificarToken, verificarRol('admin'), tipoMedicController.actualizarTipo);
+router.delete('/:id', verificarToken, verificarRol('admin'), tipoMedicController.eliminarTipo);
 
 module.exports = router;
