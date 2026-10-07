@@ -71,8 +71,11 @@ const Validadores = {
       return "";
     },
     passwordSegura(valor) {
-      if (String(valor).length < 6) {
-        return "La contraseña debe tener al menos 6 caracteres.";
+      if (String(valor).length < 10) {
+        return "La contraseña debe tener al menos 10 caracteres.";
+      }
+      if (!/[A-Za-z]/.test(valor) || !/\d/.test(valor)) {
+        return "La contraseña debe incluir al menos una letra y un número.";
       }
       return "";
     },

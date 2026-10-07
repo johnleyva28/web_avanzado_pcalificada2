@@ -111,3 +111,15 @@ $RECYCLE.BIN/
 ~$*.docx
 ~$*.xlsx
 ~$*.pptx
+
+# -----------------------------
+# Cryptographic key / credential files (CN-028)
+# -----------------------------
+*.pem
+*.key
+*.p12
+*.pfx
+*.jks
+credentials.json
+credentials*.json
+service-account*.json

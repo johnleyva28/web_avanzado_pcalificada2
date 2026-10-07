@@ -31,12 +31,22 @@ const MIME = {
 function servirArchivo(res, rutaArchivo) {
   fs.readFile(rutaArchivo, (err, contenido) => {
     if (err) {
-      res.writeHead(404, { "Content-Type": "text/plain; charset=utf-8" });
+      res.writeHead(404, {
+        "Content-Type": "text/plain; charset=utf-8",
+        "X-Content-Type-Options": "nosniff",
+      });
       res.end("404 - No encontrado");
       return;
     }
     const ext = path.extname(rutaArchivo).toLowerCase();
-    res.writeHead(200, { "Content-Type": MIME[ext] || "application/octet-stream" });
+    const headers = {
+      "Content-Type": MIME[ext] || "application/octet-stream",
+      "X-Content-Type-Options": "nosniff",
+      "Referrer-Policy": "strict-origin-when-cross-origin",
+      "X-Frame-Options": "DENY",
+      "Cache-Control": ext === ".html" ? "no-cache" : "public, max-age=300",
+    };
+    res.writeHead(200, headers);
     res.end(contenido);
   });
 }
