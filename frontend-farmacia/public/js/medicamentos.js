@@ -30,7 +30,7 @@ async function inicializarPaginaMedicamentos(usuario) {
   try {
     tiposDisponibles = await API.listarTipos();
   } catch (error) {
-    mostrarAlerta("No se pudieron cargar los tipos de medicamento: " + error.message, "danger");
+    Toast.error("No se pudieron cargar los tipos de medicamento: " + error.message);
     tiposDisponibles = [];
   }
 
@@ -48,15 +48,17 @@ async function inicializarPaginaMedicamentos(usuario) {
 async function cargarYRenderizarMedicamentos(puedeEscribir, puedeEliminar) {
   const tbody = document.getElementById("tbody-medicamentos");
   if (!tbody) return;
-  tbody.innerHTML = `<tr><td colspan="6" class="sin-datos">Cargando medicamentos...</td></tr>`;
+  tbody.innerHTML = `<tr><td colspan="7" class="sin-datos">
+    <i class="bi bi-arrow-repeat spin" aria-hidden="true"></i> Cargando medicamentos...
+  </td></tr>`;
 
   try {
     const meds = await API.listarMedicamentos();
     medicamentosEnMemoria = meds;
     renderizarTabla(meds, puedeEscribir, puedeEliminar);
   } catch (error) {
-    mostrarAlerta(error.message, "danger");
-    tbody.innerHTML = `<tr><td colspan="6" class="sin-datos text-danger">${error.message}</td></tr>`;
+    Toast.error(error.message);
+    tbody.innerHTML = `<tr><td colspan="7" class="sin-datos text-danger">${escapeHtml(error.message)}</td></tr>`;
   }
 }
 
@@ -159,24 +161,24 @@ async function manejarEnvioFormulario(puedeEscribir) {
   try {
     if (esEdicion) {
       await API.actualizarMedicamento(idInput.value, datos);
-      mostrarAlerta("Medicamento actualizado correctamente.", "success");
+      Toast.exito("Medicamento actualizado correctamente.");
     } else {
       await API.crearMedicamento(datos);
-      mostrarAlerta("Medicamento creado correctamente.", "success");
+      Toast.exito("Medicamento creado correctamente.");
     }
     cerrarModal();
     limpiarFormulario();
     const usuario = Sesion.obtenerUsuario();
     await cargarYRenderizarMedicamentos(Nav.puedeEscribir("medicamentos"), usuario.rol === "admin");
   } catch (error) {
-    mostrarAlerta(error.message, "danger");
+    Toast.error(error.message);
   }
 }
 
 window.editarMedicamento = function (id) {
   const med = medicamentosEnMemoria.find((m) => m.id === id);
   if (!med) {
-    mostrarAlerta("No se encontró el medicamento.", "warning");
+    Toast.aviso("No se encontró el medicamento.");
     return;
   }
   cargarTiposEnSelect(med.tipoMedicId);
@@ -200,11 +202,11 @@ window.confirmarEliminarMedicamento = function (id, nombre) {
 async function eliminarMedicamento(id) {
   try {
     await API.eliminarMedicamento(id);
-    mostrarAlerta("Medicamento eliminado correctamente.", "success");
+    Toast.exito("Medicamento eliminado correctamente.");
     const usuario = Sesion.obtenerUsuario();
     await cargarYRenderizarMedicamentos(Nav.puedeEscribir("medicamentos"), usuario.rol === "admin");
   } catch (error) {
-    mostrarAlerta(error.message, "danger");
+    Toast.error(error.message);
   }
 }
 
@@ -259,16 +261,14 @@ function cerrarModal() {
 }
 
 function mostrarAlerta(mensaje, tipo = "info") {
-  const contenedor = document.getElementById("contenedor-alerta");
-  if (!contenedor) return;
-  contenedor.innerHTML = `
-    <div class="alert alert-${tipo} alerta-flotante shadow-sm" role="alert">
-      ${escapeHtml(mensaje)}
-    </div>
-  `;
-  setTimeout(() => {
-    if (contenedor) contenedor.innerHTML = "";
-  }, 3500);
+  // Deprecado: usar Toast.* directamente. Mantenido por compatibilidad.
+  if (typeof Toast !== "undefined") {
+    if (tipo === "success") return Toast.exito(mensaje);
+    if (tipo === "danger")  return Toast.error(mensaje);
+    if (tipo === "warning") return Toast.aviso(mensaje);
+    return Toast.info(mensaje);
+  }
+  console.warn("mostrarAlerta llamado sin Toast disponible:", mensaje);
 }
 
 function escapeHtml(texto) {

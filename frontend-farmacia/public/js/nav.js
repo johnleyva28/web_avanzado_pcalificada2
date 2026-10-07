@@ -26,7 +26,7 @@ const Nav = {
       <nav class="navbar navbar-expand-lg navbar-farmacia">
         <div class="container-fluid">
           <a class="navbar-brand" href="home.html">
-            <i class="bi bi-capsule"></i> Farmacia
+            <i class="bi bi-capsule"></i> <span>Farmacia</span>
           </a>
           <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#menuPrincipal"
                   aria-controls="menuPrincipal" aria-expanded="false" aria-label="Toggle navegación">
@@ -35,54 +35,45 @@ const Nav = {
           <div class="collapse navbar-collapse" id="menuPrincipal">
             <ul class="navbar-nav me-auto mb-2 mb-lg-0">
               ${items
-                .map((item) => {
-                  // Dropdown si tiene submenú
-                  if (item.submenu && item.submenu.length) {
-                    return `
-                      <li class="nav-item dropdown">
-                        <a class="nav-link dropdown-toggle ${item.clave === paginaActiva ? "active" : ""}"
-                           href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                          ${item.etiqueta}
-                        </a>
-                        <ul class="dropdown-menu">
-                          ${item.submenu
-                            .map(
-                              (sub) => `
-                            <li><a class="dropdown-item" href="${sub.href}">${sub.etiqueta}</a></li>`
-                            )
-                            .join("")}
-                        </ul>
-                      </li>`;
-                  }
-                  return `
+                .map(
+                  (item) => `
                     <li class="nav-item">
                       <a class="nav-link ${item.clave === paginaActiva ? "active" : ""}"
                          href="${item.href}">${item.etiqueta}</a>
-                    </li>`;
-                })
+                    </li>`
+                )
                 .join("")}
             </ul>
 
             <form class="buscador-nav" role="search" onsubmit="event.preventDefault();">
-              <input
-                type="search"
-                id="input-buscar-nav"
-                class="form-control"
-                placeholder="Buscar..."
-                aria-label="Buscar"
-              />
-              <button class="btn btn-buscar-nav" type="submit" id="btn-buscar-nav">
-                <i class="bi bi-search"></i> Búsqueda
+              <div class="buscador-wrapper">
+                <i class="bi bi-search icono-buscar"></i>
+                <input
+                  type="search"
+                  id="input-buscar-nav"
+                  class="form-control"
+                  placeholder="Buscar..."
+                  aria-label="Buscar"
+                />
+              </div>
+              <button class="btn-buscar-nav" type="submit" id="btn-buscar-nav" aria-label="Buscar">
+                Buscar
               </button>
             </form>
 
-            <div class="user-info">
-              <i class="bi bi-person-circle"></i>
-              <span>${this.escapar(usuario.nombre)}</span>
-              <span class="rol-badge">${this.formatearRol(usuario.rol)}</span>
-              <div class="separador-vertical"></div>
-              <button class="btn-logout" id="btn-cerrar-sesion">
-                <i class="bi bi-box-arrow-right"></i> Cerrar sesión
+            <div class="navbar-seccion usuario">
+              <div class="user-chip" title="${this.escapar(usuario.nombre)} · ${this.formatearRol(usuario.rol)}">
+                <div class="avatar" aria-hidden="true">${this.iniciales(usuario.nombre)}</div>
+                <div class="user-meta">
+                  <span class="user-nombre">${this.escapar(usuario.nombre)}</span>
+                  <span class="rol-badge rol-badge--${usuario.rol}">
+                    <i class="bi ${this.iconoRol(usuario.rol)}" aria-hidden="true"></i>
+                    ${this.abreviarRol(usuario.rol)}
+                  </span>
+                </div>
+              </div>
+              <button class="btn-logout" id="btn-cerrar-sesion" aria-label="Cerrar sesión" title="Cerrar sesión">
+                <i class="bi bi-box-arrow-right"></i>
               </button>
             </div>
           </div>
@@ -96,29 +87,22 @@ const Nav = {
   },
 
   /**
+   * Devuelve las iniciales (1-2 letras) del nombre para el avatar.
+   */
+  iniciales(nombre) {
+    if (!nombre) return "?";
+    const partes = String(nombre).trim().split(/\s+/).slice(0, 2);
+    return partes.map((p) => p.charAt(0).toUpperCase()).join("");
+  },
+
+  /**
    * Devuelve los items de menú que cada rol puede ver.
    */
   itemsParaRol(rol) {
     const todos = [
-      { clave: "inicio",        href: "home.html", etiqueta: "Inicio", roles: ["admin", "moderador", "cliente"] },
-      {
-        clave: "tipos",
-        href: "tipos.html",
-        etiqueta: "Tipos de Medicamento",
-        roles: ["admin", "moderador"],
-        submenu: [
-          { etiqueta: "Ver listado", href: "tipos.html" },
-        ],
-      },
-      {
-        clave: "medicamentos",
-        href: "medicamentos.html",
-        etiqueta: "Medicamentos",
-        roles: ["admin", "moderador", "cliente"],
-        submenu: [
-          { etiqueta: "Ver listado", href: "medicamentos.html" },
-        ],
-      },
+      { clave: "inicio",        href: "home.html",        etiqueta: "Inicio",    roles: ["admin", "moderador", "cliente"] },
+      { clave: "medicamentos",  href: "medicamentos.html", etiqueta: "Medicamentos", roles: ["admin", "moderador", "cliente"] },
+      { clave: "tipos",         href: "tipos.html",        etiqueta: "Tipos",     roles: ["admin", "moderador"] },
     ];
     return todos.filter((item) => item.roles.includes(rol));
   },
@@ -126,6 +110,20 @@ const Nav = {
   formatearRol(rol) {
     const mapa = { admin: "Administrador", moderador: "Moderador", cliente: "Usuario" };
     return mapa[rol] || rol;
+  },
+
+  abreviarRol(rol) {
+    const mapa = { admin: "Admin", moderador: "Mod", cliente: "Cliente" };
+    return mapa[rol] || rol;
+  },
+
+  iconoRol(rol) {
+    const mapa = {
+      admin: "bi-shield-lock-fill",
+      moderador: "bi-tools",
+      cliente: "bi-person",
+    };
+    return mapa[rol] || "bi-person";
   },
 
   detectarPaginaActual() {
@@ -161,7 +159,7 @@ const Nav = {
       tablas.forEach((tabla) => {
         const filas = tabla.querySelectorAll("tbody tr");
         filas.forEach((fila) => {
-          if (fila.classList.contains("sin-datos-fila")) return; // no tocar filas placeholder
+          if (fila.classList.contains("sin-datos-fila")) return;
           const texto = (fila.textContent || "").toLowerCase();
           fila.style.display = termino === "" || texto.includes(termino) ? "" : "none";
         });

@@ -104,3 +104,10 @@ $RECYCLE.BIN/
 *.tar.gz
 .eslintcache
 .stylelintcache
+# -----------------------------
+# Archivos temporales de Office
+# -----------------------------
+~*.tmp
+~$*.docx
+~$*.xlsx
+~$*.pptx

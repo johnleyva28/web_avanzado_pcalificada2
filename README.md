@@ -27,10 +27,12 @@ Este repositorio contiene la solución completa de la **Evaluación 02** del cur
 
 ## 🚀 Demo en vivo
 
-| Servicio   | Plataforma | URL                                                                  |
-|------------|------------|---------------------------------------------------------------------|
-| Backend    | Render     | *(configurar tras desplegar — ver sección [Deploy](#-desplegar-en-render))* |
-| Frontend   | Render     | *(configurar tras desplegar)*                                       |
+| Servicio  | Plataforma | URL                                                                       |
+|-----------|------------|---------------------------------------------------------------------------|
+| Backend   | Render     | https://web-avanzado-pcalificada2.onrender.com/api                        |
+| Frontend  | Render     | https://web-avanzado-pcalificada2-1.onrender.com/                         |
+
+> El frontend en `:5500` y el backend en `:4000` también se pueden levantar en local siguiendo la sección [Quick start](#-quick-start).
 
 ---
 
@@ -54,6 +56,7 @@ Este repositorio contiene la solución completa de la **Evaluación 02** del cur
 ```
 web_avanzado_pcalificada2/
 ├── README.md                       ← este archivo
+├── CREDENCIALES.md                  ← credenciales de prueba (solo evaluación)
 ├── .gitignore
 │
 ├── backend-farmacia/               ← Ejercicio 1 (API REST)
@@ -80,22 +83,25 @@ web_avanzado_pcalificada2/
 │       └── medicamentoRoutes.js     (GET/POST/PUT/DELETE /api/medicamentos)
 │
 └── frontend-farmacia/              ← Ejercicio 2 (UI)
-    ├── package.json
-    ├── server.js                    (servidor estático que sirve la carpeta public/)
+    ├── server.js                    (servidor estático que sirve public/ en :5500)
     └── public/
-        ├── index.html               (Login)
+        ├── index.html               (Login con split layout)
         ├── register.html              (Registro con selector de rol)
-        ├── home.html                 (Menú principal con tarjetas por módulo)
+        ├── home.html                 (Menú con tarjetas + stats reales)
         ├── tipos.html                (CRUD TipoMedic — solo admin)
         ├── medicamentos.html         (CRUD Medicamento — admin + moderador)
+        ├── favicon.svg               (icono del sitio)
+        ├── apple-touch-icon.svg
         ├── css/
-        │   └── styles.css            (paleta azul marino + orangered + animaciones)
+        │   └── styles.css            (paleta azul + orangered, animaciones, glassmorphism)
         └── js/
+            ├── config.js             (resuelve la URL del backend según entorno)
             ├── api.js                (fetch + Sesion en sessionStorage)
             ├── validators.js         (validación frontend reutilizable)
+            ├── toast.js              (sistema de notificaciones)
             ├── nav.js                (navbar dinámico por rol + buscador)
             ├── auth.js               (login / register)
-            ├── home.js               (render del menú principal)
+            ├── home.js               (render del menú + stats)
             ├── tipos.js              (CRUD TipoMedic)
             └── medicamentos.js       (CRUD Medicamento)
 ```
@@ -109,7 +115,7 @@ web_avanzado_pcalificada2/
 ```bash
 cd backend-farmacia
 npm install
-cp .env.example .env       # editar DATABASE_URL y JWT_SECRET
+cp .env.example .env       # editar DATABASE_URL, JWT_SECRET y FRONTEND_URL (incluir http://localhost:5500)
 npm run seed               # opcional: crea admin, mod, cliente y 2 tipos con meds demo
 npm start                  # levanta el servidor en http://localhost:4000
 ```
@@ -118,19 +124,15 @@ npm start                  # levanta el servidor en http://localhost:4000
 
 ```bash
 cd frontend-farmacia
-node server.js             # levanta el servidor estático en http://localhost:3000
-# Abrir http://localhost:3000
+node server.js             # levanta el servidor estático en http://localhost:5500
+# Abrir http://localhost:5500
 ```
 
-> El frontend está pensado como **sitio estático** (HTML/CSS/JS sin build). El `node server.js` solo sirve los archivos de `public/`. En producción, Render lo detecta automáticamente como *Static Site*.
+> El frontend está pensado como **sitio estático** (HTML/CSS/JS sin build). El `node server.js` solo sirve los archivos de `public/`.
 
-### Usuarios de prueba (creados por `npm run seed`)
+### 3) Probar la app
 
-| Rol          | Email                  | Contraseña   |
-|--------------|------------------------|--------------|
-| Administrador | `admin@farmacia.com`   | `admin123`   |
-| Moderador    | `mod@farmacia.com`     | `mod123`     |
-| Usuario       | `cliente@farmacia.com` | `cliente123` |
+Las credenciales de los usuarios sembrados están en [`CREDENCIALES.md`](./CREDENCIALES.md).
 
 ---
 
@@ -199,53 +201,7 @@ La barra de navegación y la visibilidad de los botones cambian automáticamente
   ```
 - **Contraseñas hasheadas con bcrypt** (10 rondas). Nunca se devuelven al frontend.
 - **Nunca compartir claves en issues, PRs o capturas.** Si la `JWT_SECRET` o la `DATABASE_URL` se filtran, rotarlas de inmediato.
-
----
-
-## 📦 Desplegar en Render
-
-### Backend (Web Service)
-
-1. Sube el repo a GitHub (ver instrucciones más abajo).
-2. En Render → **New** → **Web Service** → conecta el repo.
-3. Configuración:
-   - **Root Directory:** `backend-farmacia`
-   - **Build Command:** `npm install`
-   - **Start Command:** `node server.js`
-   - **Plan:** Free
-4. Variables de entorno (`Environment → Add Secret`):
-   ```
-   NODE_ENV=production
-   PORT=4000
-   DATABASE_URL=<cadena_postgres_remota>
-   JWT_SECRET=<cadena_aleatoria_larga>
-   JWT_EXPIRES_IN=8h
-   FRONTEND_URL=https://<tu-frontend>.onrender.com
-   ```
-5. Tras desplegar, anota la URL del backend, por ejemplo `https://farmacia-api-xxxx.onrender.com`.
-
-### Frontend (Static Site)
-
-1. Render → **New** → **Static Site** → conecta el mismo repo.
-2. Configuración:
-   - **Root Directory:** `frontend-farmacia`
-   - **Build Command:** *(vacío)*
-   - **Publish Directory:** `public`
-3. Variables: ninguna necesaria.
-4. Una vez desplegado, vuelve al **Web Service** del backend y actualiza `FRONTEND_URL` con la URL del frontend (ej. `https://farmacia-ui-xxxx.onrender.com`).
-
-### Verificación post-despliegue
-
-```bash
-curl https://<tu-backend>.onrender.com/
-# {"message":"API REST Farmacia activa"}
-
-curl -X POST https://<tu-backend>.onrender.com/api/auth/login \
-  -H "Content-Type: application/json" \
-  -d '{"email":"admin@farmacia.com","password":"admin123"}'
-```
-
-Y abrir `https://<tu-frontend>.onrender.com/` para usar la UI.
+- **Credenciales de prueba** documentadas en [`CREDENCIALES.md`](./CREDENCIALES.md) — son públicas y solo válidas para evaluación académica.
 
 ---
 

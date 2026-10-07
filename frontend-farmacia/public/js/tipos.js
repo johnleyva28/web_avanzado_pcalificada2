@@ -34,15 +34,17 @@ async function inicializarPaginaTipos() {
 async function cargarYRenderizarTipos() {
   const tbody = document.getElementById("tbody-tipos");
   if (!tbody) return;
-  tbody.innerHTML = `<tr><td colspan="4" class="sin-datos">Cargando tipos de medicamento...</td></tr>`;
+  tbody.innerHTML = `<tr><td colspan="4" class="sin-datos">
+    <i class="bi bi-arrow-repeat spin" aria-hidden="true"></i> Cargando tipos...
+  </td></tr>`;
 
   try {
     const tipos = await API.listarTipos();
     tiposEnMemoria = tipos;
     renderizarTabla(tipos);
   } catch (error) {
-    mostrarAlerta(error.message, "danger");
-    tbody.innerHTML = `<tr><td colspan="4" class="sin-datos text-danger">${error.message}</td></tr>`;
+    Toast.error(error.message);
+    tbody.innerHTML = `<tr><td colspan="4" class="sin-datos text-danger">${escapeHtml(error.message)}</td></tr>`;
   }
 }
 
@@ -106,12 +108,12 @@ async function manejarEnvioFormulario() {
 
   try {
     await API.crearTipo(datos);
-    mostrarAlerta("Tipo de medicamento creado correctamente.", "success");
+    Toast.exito("Tipo de medicamento creado correctamente.");
     cerrarModal();
     limpiarFormulario();
     await cargarYRenderizarTipos();
   } catch (error) {
-    mostrarAlerta(error.message, "danger");
+    Toast.error(error.message);
   }
 }
 
@@ -142,16 +144,14 @@ function cerrarModal() {
 }
 
 function mostrarAlerta(mensaje, tipo = "info") {
-  const contenedor = document.getElementById("contenedor-alerta");
-  if (!contenedor) return;
-  contenedor.innerHTML = `
-    <div class="alert alert-${tipo} alerta-flotante shadow-sm" role="alert">
-      ${escapeHtml(mensaje)}
-    </div>
-  `;
-  setTimeout(() => {
-    if (contenedor) contenedor.innerHTML = "";
-  }, 3500);
+  // Deprecado: usar Toast.* directamente.
+  if (typeof Toast !== "undefined") {
+    if (tipo === "success") return Toast.exito(mensaje);
+    if (tipo === "danger")  return Toast.error(mensaje);
+    if (tipo === "warning") return Toast.aviso(mensaje);
+    return Toast.info(mensaje);
+  }
+  console.warn("mostrarAlerta llamado sin Toast disponible:", mensaje);
 }
 
 function escapeHtml(texto) {
