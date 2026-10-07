@@ -2,7 +2,7 @@
 // tipos.js — CRUD de la tabla relacionada "tipos_medicamento"
 // Permisos:
 //   - admin     : ver, crear, editar, eliminar
-//   - moderador : ver (solo lectura)
+//   - moderador : ver, crear, editar (no eliminar)
 //   - cliente   : sin acceso (redirigido desde la navbar)
 // ===========================================================
 
@@ -23,13 +23,14 @@ let tiposEnMemoria = [];
 
 function inicializarPaginaTipos(usuario) {
   const puedeEscribir = Nav.puedeEscribir("tipos-medicamento");
+  const puedeEliminar = Nav.puedeEliminar("tipos-medicamento");
 
   const btnNuevo = document.getElementById("btn-nuevo-tipo");
   if (btnNuevo) {
     btnNuevo.style.display = puedeEscribir ? "inline-flex" : "none";
   }
 
-  cargarYRenderizarTipos(puedeEscribir);
+  cargarYRenderizarTipos(puedeEscribir, puedeEliminar);
 
   const form = document.getElementById("form-tipo");
   if (form) {
@@ -40,7 +41,7 @@ function inicializarPaginaTipos(usuario) {
   }
 }
 
-async function cargarYRenderizarTipos(puedeEscribir) {
+async function cargarYRenderizarTipos(puedeEscribir, puedeEliminar) {
   const tbody = document.getElementById("tbody-tipos");
   if (!tbody) return;
   tbody.innerHTML = `<tr><td colspan="4" class="sin-datos">
@@ -50,14 +51,14 @@ async function cargarYRenderizarTipos(puedeEscribir) {
   try {
     const tipos = await API.listarTipos();
     tiposEnMemoria = tipos;
-    renderizarTabla(tipos, puedeEscribir);
+    renderizarTabla(tipos, puedeEscribir, puedeEliminar);
   } catch (error) {
     Toast.error(error.message);
     tbody.innerHTML = `<tr><td colspan="4" class="sin-datos text-danger">${escapeHtml(error.message)}</td></tr>`;
   }
 }
 
-function renderizarTabla(tipos, puedeEscribir) {
+function renderizarTabla(tipos, puedeEscribir, puedeEliminar) {
   const tbody = document.getElementById("tbody-tipos");
   if (!tipos || tipos.length === 0) {
     tbody.innerHTML = `<tr><td colspan="4" class="sin-datos">No hay tipos de medicamento registrados.</td></tr>`;
@@ -78,7 +79,7 @@ function renderizarTabla(tipos, puedeEscribir) {
             <i class="bi bi-pencil"></i>
           </button>
           <button class="btn-accion eliminar" title="Eliminar"
-                  ${puedeEscribir ? "" : "disabled"}
+                  ${puedeEliminar ? "" : "disabled"}
                   onclick="confirmarEliminarTipo(${t.id}, '${escapeHtml(t.nombre).replace(/'/g, "&#39;")}')">
             <i class="bi bi-trash"></i>
           </button>
@@ -136,7 +137,7 @@ async function manejarEnvioFormulario(puedeEscribir) {
     }
     cerrarModal();
     limpiarFormulario();
-    await cargarYRenderizarTipos(puedeEscribir);
+    await cargarYRenderizarTipos(puedeEscribir, Nav.puedeEliminar("tipos-medicamento"));
   } catch (error) {
     Toast.error(error.message);
   }

@@ -32,7 +32,7 @@ document.addEventListener("DOMContentLoaded", () => {
         descripcion: "Gestiona las categorías (Analgésicos, Antibióticos, etc.).",
         href: "tipos.html",
         requiere: ["admin", "moderador"],
-        escritura: ["admin"],
+        escritura: ["admin", "moderador"],
       },
     ];
 

@@ -201,15 +201,26 @@ const Nav = {
 
   /**
    * Devuelve true si el rol puede ejecutar acciones de
-   * escritura (crear/editar/eliminar) sobre la entidad dada.
-   *   tiposMedicamento  -> solo admin
+   * escritura (crear/editar) sobre la entidad dada.
+   *   tiposMedicamento  -> admin y moderador
    *   medicamentos      -> admin y moderador
+   * La eliminación siempre requiere admin (ver puedeEliminar).
    */
   puedeEscribir(entidad) {
     const usuario = Sesion.obtenerUsuario();
     if (!usuario) return false;
-    if (entidad === "tipos-medicamento") return usuario.rol === "admin";
+    if (entidad === "tipos-medicamento") return usuario.rol === "admin" || usuario.rol === "moderador";
     if (entidad === "medicamentos") return usuario.rol === "admin" || usuario.rol === "moderador";
     return false;
+  },
+
+  /**
+   * Devuelve true si el rol puede eliminar registros de la entidad dada.
+   * Solo admin en ambos casos.
+   */
+  puedeEliminar(entidad) {
+    const usuario = Sesion.obtenerUsuario();
+    if (!usuario) return false;
+    return usuario.rol === "admin";
   },
 };
